@@ -59,4 +59,4 @@ This project is built natively within the **Databricks** ecosystem to ensure sca
 ### 📝 An Honest Caveat on the Data
 Devolution is transitionary. FY 2013/14 was budgeted during Kenya's initial transition to the devolved system. Because of this, a small sliver of Wa Iria's "first 4 years" data reflects a transitionary budget that predates his administration's absolute operational control.
 
-![The final dashboard](docs/dashboard.pdf): NOTE; This is a pdf format, just showing the dashboard components.
+[The final dashboard](docs/dashboard.pdf): NOTE; This is a pdf format, just showing the dashboard components.
