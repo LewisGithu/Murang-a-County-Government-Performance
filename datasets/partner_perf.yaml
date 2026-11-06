@@ -1,0 +1,51 @@
+version: '1.1'
+source: >-
+  WITH cleaned AS (
+    SELECT
+      project_name, sector, status, fiscal_year, fiscal_year_start,
+      approved_cost_kes, disbursed_kes, expenditure_kes, completion_pct,
+      filter(
+        transform(split(coalesce(nullif(trim(development_partners), ''), 'County-funded'), ';'), x -> trim(x)),
+        x -> x <> ''
+      ) AS partners
+    FROM projects.muranga.projects
+  )
+  SELECT
+    p.value AS dev_partner,
+    project_name, sector, status, fiscal_year, fiscal_year_start, completion_pct,
+    approved_cost_kes / size(partners) AS share_approved_kes,
+    disbursed_kes / size(partners) AS share_disbursed_kes,
+    expenditure_kes / size(partners) AS share_expenditure_kes
+  FROM cleaned
+  LATERAL VIEW explode(partners) p AS value
+comment: One row per project-partner pair; share_* columns split each project's money across its development partners so partner sums do not double-count
+dimensions:
+  - name: dev_partner
+    expr: dev_partner
+  - name: sector
+    expr: coalesce(sector, 'Not specified')
+  - name: status
+    expr: CASE WHEN completion_pct = 100 AND status IN ('Ongoing', 'Stalled') THEN 'Completed' ELSE status END
+  - name: fiscal_year_start
+    expr: fiscal_year_start
+measures:
+  - name: project_count
+    expr: COUNT(DISTINCT project_name)
+  - name: approved_share_kes
+    expr: SUM(share_approved_kes)
+    format:
+      type: currency
+      currency_code: KES
+      abbreviation: compact
+  - name: disbursed_share_kes
+    expr: SUM(share_disbursed_kes)
+    format:
+      type: currency
+      currency_code: KES
+      abbreviation: compact
+  - name: spent_share_kes
+    expr: SUM(share_expenditure_kes)
+    format:
+      type: currency
+      currency_code: KES
+      abbreviation: compact

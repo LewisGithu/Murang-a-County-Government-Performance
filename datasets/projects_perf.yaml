@@ -1,0 +1,76 @@
+version: '1.1'
+source: projects.muranga.projects
+comment: Murang'a County project portfolio, one row per project per fiscal year (FY 2013/14-2025/26)
+dimensions:
+  - name: sector
+    expr: coalesce(sector, 'Not specified')
+  - name: status
+    expr: CASE WHEN completion_pct = 100 AND status IN ('Ongoing', 'Stalled') THEN 'Completed' ELSE status END
+  - name: fiscal_year
+    expr: fiscal_year
+  - name: fiscal_year_start
+    expr: fiscal_year_start
+  - name: governor_era
+    expr: CASE WHEN fiscal_year_start <= 2021 THEN 'Mwangi wa Iria(2013-2022)' ELSE 'Irungu Kang''ata(2022-todate)' END
+  - name: matched_era
+    expr: CASE WHEN fiscal_year_start BETWEEN 2013 AND 2016 THEN 'Mwangi wa Iria' WHEN fiscal_year_start BETWEEN 2022 AND 2025 THEN 'Irungu Kang''ata' ELSE 'Outside comparison window' END
+  - name: dev_partner
+    expr: coalesce(development_partners, 'County-funded')
+  - name: project_name
+    expr: project_name
+  - name: watchlist_flag
+    expr: CASE WHEN (status IN ('Stalled', 'Ongoing') AND completion_pct < 100) OR (status <> 'Completed' AND expenditure_kes > 0 AND completion_pct < 50) THEN 1 ELSE 0 END
+measures:
+  - name: total_projects
+    expr: COUNT(1)
+  - name: approved_kes
+    expr: SUM(approved_cost_kes)
+    format:
+      type: currency
+      currency_code: KES
+      abbreviation: compact
+  - name: disbursed_kes
+    expr: SUM(disbursed_kes)
+    format:
+      type: currency
+      currency_code: KES
+      abbreviation: compact
+  - name: spent_kes
+    expr: SUM(expenditure_kes)
+    format:
+      type: currency
+      currency_code: KES
+      abbreviation: compact
+  - name: avg_completion_pct
+    expr: AVG(completion_pct)
+    format:
+      type: number
+      decimal_places:
+        type: exact
+        places: 1
+  - name: spend_efficiency
+    expr: SUM(expenditure_kes) / NULLIF(SUM(disbursed_kes), 0)
+    format:
+      type: percentage
+      decimal_places:
+        type: exact
+        places: 1
+  - name: spend_share_of_budget
+    expr: SUM(expenditure_kes) / NULLIF(SUM(approved_cost_kes), 0)
+    format:
+      type: percentage
+      decimal_places:
+        type: exact
+        places: 1
+  - name: avg_cost_per_project_kes
+    expr: SUM(approved_cost_kes) / COUNT(1)
+    format:
+      type: currency
+      currency_code: KES
+      abbreviation: compact
+  - name: avg_spend_per_project_kes
+    expr: SUM(expenditure_kes) / COUNT(1)
+    format:
+      type: currency
+      currency_code: KES
+      abbreviation: compact

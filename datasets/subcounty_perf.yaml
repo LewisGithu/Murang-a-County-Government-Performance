@@ -1,0 +1,39 @@
+version: '1.1'
+source: projects.muranga.projects_by_sub_county
+comment: One row per project-sub-county pair; share_* columns split each project's money across its sub-counties so sums do not double-count
+dimensions:
+  - name: sub_county
+    expr: sub_county
+  - name: sector
+    expr: coalesce(sector, 'Not specified')
+  - name: status
+    expr: CASE WHEN completion_pct = 100 AND status IN ('Ongoing', 'Stalled') THEN 'Completed' ELSE status END
+  - name: fiscal_year_start
+    expr: fiscal_year_start
+measures:
+  - name: project_count
+    expr: COUNT(DISTINCT project_name)
+  - name: approved_share_kes
+    expr: SUM(share_approved_kes)
+    format:
+      type: currency
+      currency_code: KES
+      abbreviation: compact
+  - name: disbursed_share_kes
+    expr: SUM(share_disbursed_kes)
+    format:
+      type: currency
+      currency_code: KES
+      abbreviation: compact
+  - name: spent_share_kes
+    expr: SUM(share_expenditure_kes)
+    format:
+      type: currency
+      currency_code: KES
+      abbreviation: compact
+  - name: avg_spent_per_project_kes
+    expr: SUM(share_expenditure_kes) / COUNT(DISTINCT project_name)
+    format:
+      type: currency
+      currency_code: KES
+      abbreviation: compact

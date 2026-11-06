@@ -49,7 +49,11 @@ This project is built natively within the **Databricks** ecosystem to ensure sca
 (Secure Data)           (SQL Repo Source)              (Interactive Layer)
 
 *   **Data Layer `[Unity Catalog]`**: Serves as the secure storage layer for raw datasets (`projects.muranga.projects`) and geographic views. For data governance and privacy, the raw data remains securely in the catalog and is not committed to Git.
-*   **Transformation Layer `[Metric-View Definitions]`**: The business logic, data cleaning, timeline-matching calculations, and fair-split financial models. **This SQL code is tracked and managed within this Git repository.**
+*   **Pipeline Layer `[Bronze → Silver → Gold]`**: The ETL notebook [`Murang'a CG Projects Bronze to Silver to Gold.ipynb`](Murang'a%20CG%20Projects%20Bronze%20to%20Silver%20to%20Gold%20.ipynb) cleans the raw county project records and lands them as governed Delta tables in Unity Catalog — the tables every metric view above reads from.
+*   **Transformation Layer `[Metric-View Definitions]`**: The business logic, data cleaning, timeline-matching calculations, and fair-split financial models — versioned in this repository under [`datasets/`](datasets/):
+    *   [`projects_perf.yaml`](datasets/projects_perf.yaml) — the core portfolio dataset: status normalization (100%-complete projects counted as Completed), full and matched-timeline governor eras, the at-risk watchlist flag, and all ratio measures (spend efficiency, avg cost/spend per project).
+    *   [`ward_perf.yaml`](datasets/ward_perf.yaml) and [`subcounty_perf.yaml`](datasets/subcounty_perf.yaml) — geography datasets where each project's money is split across every ward/sub-county it touches, so regional sums never double-count.
+    *   [`partner_perf.yaml`](datasets/partner_perf.yaml) — development partners exploded one row per partner, each credited a fair 1/N share of a project's approved, disbursed, and spent amounts.
 *   **Presentation Layer `[Databricks AI/BI Dashboard]`**: The frontend presentation layer that reads from the metric views to display interactive charts, trend panels, and geographical maps.
 
 ### 📝 An Honest Caveat on the Data
